@@ -87,19 +87,19 @@ class DataController extends Controller
 
                     foreach ($headerRow as $columnKey => $headerName) {
                         if (isset($mapping[$headerName])) {
-                            $columnValue = $row[$columnKey] ?? null; // ถ้าไม่มีค่าให้เป็น null
+                            $columnValue = $row[$columnKey] ?? null;
                             $data[$mapping[$headerName]] = $columnValue;
                         }
                     }
 
-                    // 🔥 เช็คเฉพาะคอลัมน์ที่ต้องมีค่า
-                    if (empty($data['asset_number']) || empty($data['asset_name']) || empty($data['asset_asset_status_id'])) {
-                        return redirect()->route('import-excel')->with('error',
-                            'ข้อมูลไม่ครบถ้วน: หมายเลขครุภัณฑ์, ชื่อครุภัณฑ์, สถานะ ห้ามเป็นค่าว่าง');
-                    }
+                    // 🔥 กำหนดให้ asset_asset_status_id เป็น 1 เสมอ
+                    $data['asset_asset_status_id'] = 1;
 
-                    // ✅ กำหนดค่า "asset_asset_status_id" เป็น 1 ถ้ายังไม่มีค่า
-                    $data['asset_asset_status_id'] = $data['asset_asset_status_id'] ?? 1;
+                    // ✅ เช็คค่าว่าง
+                    if (empty($data['asset_number']) || empty($data['asset_name'])) {
+                        return redirect()->route('import-excel')->with('error',
+                            'ข้อมูลไม่ครบถ้วน: หมายเลขครุภัณฑ์ และชื่อครุภัณฑ์ ห้ามเป็นค่าว่าง');
+                    }
 
                     // ✅ ตรวจสอบ asset_number ซ้ำ
                     if (AssetMain::where('asset_number', $data['asset_number'])->exists()) {
@@ -108,6 +108,7 @@ class DataController extends Controller
 
                     $assetsToInsert[] = $data;
                 }
+
 
 
 
