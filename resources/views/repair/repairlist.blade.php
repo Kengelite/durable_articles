@@ -158,8 +158,10 @@
 
                             <!-- Add file input to upload new images -->
                             <div class="row mb-3">
-                                <label for="asset_images" class="form-label">อัพโหลดรูปภาพใหม่</label>
-                                <input type="file" name="asset_images[]" id="asset_images" class="form-control" accept="image/*" multiple>
+                                <div class="col-md-12">
+                                    <label for="asset_images" class="form-label">อัพโหลดรูปภาพใหม่</label>
+                                    <input type="file" name="asset_images[]" id="asset_images" class="form-control" accept="image/*" multiple>
+                                </div>
                             </div>
 
                             <script>
