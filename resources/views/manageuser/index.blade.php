@@ -35,29 +35,37 @@
                     <h5 class="modal-title" id="addUserModalLabel">เพิ่มข้อมูลผู้ใช้งาน</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- ฟอร์มสำหรับเพิ่มผู้ใช้งาน -->
+
                 <div class="modal-body">
-                    <div id="error-message" style="color: red; display: none; font-weight: bold;"></div> <!-- ข้อความผิดพลาด -->
+                    <!-- error รวม -->
+                    <div id="error-message" class="text-danger fw-bold fs-3 mb-4" style="display: none;"></div>
+
                     <form id="addUserForm" action="{{ route('manageuser.store') }}" method="POST">
                         @csrf
-                        <div class="mb-3">
+
+                        <div class="mb-4">
                             <label for="name" class="form-label">ชื่อ</label>
                             <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
-                            <div id="name-error" style="color: red; display: none;"></div> <!-- ข้อความผิดพลาดของชื่อ -->
+                            <div id="name-error" class="text-danger fs-5 fw-bold mt-2" style="display: none;"></div>
                         </div>
-                        <div class="mb-3">
+
+                        <div class="mb-4">
                             <label for="email" class="form-label">อีเมล</label>
                             <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
-                            <div id="email-error" style="color: red; display: none;"></div> <!-- ข้อความผิดพลาดของอีเมล -->
+                            <div id="email-error" class="text-danger fs-5 fw-bold mt-2" style="display: none;"></div>
                         </div>
-                        <div class="mb-3">
+
+                        <div class="mb-4">
                             <label for="user_type_id" class="form-label">สถานะ</label>
                             <select class="form-select" id="user_type_id" name="user_type_id" required>
                                 @foreach ($userTypes as $type)
-                                    <option value="{{ $type->user_type_id }}" {{ old('user_type_id') == $type->user_type_id ? 'selected' : '' }}>{{ $type->user_type_name }}</option>
+                                    <option value="{{ $type->user_type_id }}" {{ old('user_type_id') == $type->user_type_id ? 'selected' : '' }}>
+                                        {{ $type->user_type_name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
+
                         <button type="submit" class="btn btn-primary">บันทึก</button>
                     </form>
                 </div>
@@ -68,16 +76,17 @@
 
     <script>
         document.getElementById('addUserForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // ป้องกันการส่งฟอร์มก่อน
+            e.preventDefault(); // กัน submit ปกติไว้ก่อน
 
-            var name = document.getElementById('name').value;
-            var email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const userTypeId = document.getElementById('user_type_id').value;
 
-            // ล้างข้อความผิดพลาดก่อนหน้า
+            // เคลียร์ error ก่อน
             document.getElementById('name-error').style.display = 'none';
             document.getElementById('email-error').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
 
-            // ส่งคำขอไปตรวจสอบใน backend
             fetch("{{ route('manageuser.store') }}", {
                 method: 'POST',
                 headers: {
@@ -87,30 +96,38 @@
                 body: JSON.stringify({
                     name: name,
                     email: email,
-                    user_type_id: document.getElementById('user_type_id').value
+                    user_type_id: userTypeId
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                var errorDiv = document.getElementById('error-message'); // Element ที่จะใช้แสดงข้อความผิดพลาด
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 400 && body.errors) {
+                    if (body.errors.name) {
+                        const nameError = document.getElementById('name-error');
+                        nameError.textContent = body.errors.name;
+                        nameError.style.display = 'block';
+                    }
 
-                // หากมีข้อผิดพลาด
-                if (data.error) {
-                    errorDiv.textContent = data.error; // แสดงข้อความผิดพลาด
-                    errorDiv.style.display = 'block'; // แสดงข้อความผิดพลาด
-                } else {
-                    errorDiv.style.display = 'none'; // ซ่อนข้อความผิดพลาดเมื่อไม่มีข้อผิดพลาด
-                    this.submit(); // ส่งฟอร์มไป
+                    if (body.errors.email) {
+                        const emailError = document.getElementById('email-error');
+                        emailError.textContent = body.errors.email;
+                        emailError.style.display = 'block';
+                    }
+
+                } else if (body.success) {
+                    // ถ้าเพิ่มสำเร็จ อาจจะปิด modal หรือ reset ฟอร์มได้ตามสะดวก
+                    alert(body.success);
+                    location.reload(); // รีโหลดหน้าเพื่อรีเฟรชข้อมูล
                 }
             })
-            .catch(error => console.log(error));
+            .catch(error => {
+                console.error('Error:', error);
+                const generalError = document.getElementById('error-message');
+                generalError.textContent = 'เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่ภายหลัง';
+                generalError.style.display = 'block';
+            });
         });
     </script>
-
-
-
-
-
 
 
     <!-- ตัวกรองสถานะ -->
@@ -131,8 +148,6 @@
                 <th scope="col">รหัส</th>
                 <th scope="col">ชื่อ</th>
                 <th scope="col">อีเมล</th>
-                <th scope="col">รหัสผ่าน</th>
-                <th scope="col">สาขาวิชา</th>
                 <th scope="col">สถานะ</th>
                 <th scope="col">จัดการข้อมูล</th>
             </tr>
@@ -143,8 +158,6 @@
                     <td>{{ $user->id }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
-                    <td>********</td>
-                    <td>{{ $user->user_major }}</td>
                     <td>
                         @php
                             $userType = $user->user_type_name ?? 'ยังไม่ได้กำหนด';
@@ -161,40 +174,114 @@
                         </form>
                     </td>
                 </tr>
+                    <!-- Modal แก้ไขข้อมูล -->
+                    <div class="modal fade" id="editModal-{{ $user->id }}" tabindex="-1" aria-labelledby="editModalLabel-{{ $user->id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel-{{ $user->id }}">แก้ไขข้อมูลผู้ใช้งาน</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- error รวม -->
+                                    <div id="error-message-{{ $user->id }}" class="text-danger fw-bold fs-3 mb-4" style="display: none;"></div>
 
-                <!-- Modal แก้ไขข้อมูล -->
-                <div class="modal fade" id="editModal-{{ $user->id }}" tabindex="-1" aria-labelledby="editModalLabel-{{ $user->id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editModalLabel-{{ $user->id }}">แก้ไขข้อมูลผู้ใช้งาน</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form action="{{ route('manageuser.update', ['id' => $user->id]) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="mb-3">
-                                        <label for="user_major-{{ $user->id }}" class="form-label">สาขาวิชา</label>
-                                        <input type="text" class="form-control" id="user_major-{{ $user->id }}" name="user_major" value="{{ $user->user_major }}">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="user_type_id-{{ $user->id }}" class="form-label">สถานะ</label>
-                                        <select class="form-select" id="user_type_id-{{ $user->id }}" name="user_type_id">
-                                            @foreach ($userTypes as $type)
-                                                <option value="{{ $type->user_type_id }}" {{ $user->user_type_id == $type->user_type_id ? 'selected' : '' }}>
-                                                    {{ $type->user_type_name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    <form id="editUserForm-{{ $user->id }}" action="{{ route('manageuser.update', ['id' => $user->id]) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
 
-                                    <button type="submit" class="btn btn-primary">บันทึก</button>
-                                </form>
+                                        <div class="mb-4">
+                                            <label for="name-{{ $user->id }}" class="form-label">ชื่อ</label>
+                                            <input type="text" class="form-control" id="name-{{ $user->id }}" name="name" value="{{ old('name', $user->name) }}" required>
+                                            <div id="name-error-{{ $user->id }}" class="text-danger fs-5 fw-bold mt-2" style="display: none;"></div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="email-{{ $user->id }}" class="form-label">อีเมล</label>
+                                            <input type="email" class="form-control" id="email-{{ $user->id }}" name="email" value="{{ old('email', $user->email) }}" required>
+                                            <div id="email-error-{{ $user->id }}" class="text-danger fs-5 fw-bold mt-2" style="display: none;"></div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="user_type_id-{{ $user->id }}" class="form-label">สถานะ</label>
+                                            <select class="form-select" id="user_type_id-{{ $user->id }}" name="user_type_id" required>
+                                                @foreach ($userTypes as $type)
+                                                    <option value="{{ $type->user_type_id }}" {{ old('user_type_id', $user->user_type_id) == $type->user_type_id ? 'selected' : '' }}>
+                                                        {{ $type->user_type_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">บันทึก</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <script>
+                        document.querySelectorAll('[id^="editUserForm-"]').forEach(form => {
+                            form.addEventListener('submit', function(e) {
+                                e.preventDefault(); // กัน submit ปกติ
+
+                                const formId = form.id.split('-')[1]; // เอา id ของ user มาใช้
+                                const name = document.getElementById('name-' + formId).value;
+                                const email = document.getElementById('email-' + formId).value;
+                                const userTypeId = document.getElementById('user_type_id-' + formId).value;
+
+                                // เคลียร์ error ก่อน
+                                document.querySelectorAll('.text-danger').forEach(error => error.style.display = 'none');
+
+                                // เริ่มต้น request
+                                fetch("{{ url('manageuser') }}/" + formId + "/update", {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    },
+                                    body: JSON.stringify({
+                                        name: name,
+                                        email: email,
+                                        user_type_id: userTypeId,
+                                    })
+                                })
+                                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                                .then(({ status, body }) => {
+                                    if (status === 400 && body.errors) {
+                                        // แสดงข้อความผิดพลาดที่เกิดขึ้นจาก backend
+                                        if (body.errors.general) {
+                                            const generalError = document.getElementById('error-message-' + formId);
+                                            generalError.textContent = body.errors.general;
+                                            generalError.style.display = 'block';
+                                        }
+
+                                        if (body.errors.name) {
+                                            const nameError = document.getElementById('name-error-' + formId);
+                                            nameError.textContent = body.errors.name;
+                                            nameError.style.display = 'block';
+                                        }
+
+                                        if (body.errors.email) {
+                                            const emailError = document.getElementById('email-error-' + formId);
+                                            emailError.textContent = body.errors.email;
+                                            emailError.style.display = 'block';
+                                        }
+                                    } else if (body.success) {
+                                        alert(body.success);
+                                        $('#editModal-' + formId).modal('hide');  // ปิด Modal เมื่อบันทึกสำเร็จ
+                                        location.reload(); // รีโหลดหน้าเพื่อรีเฟรชข้อมูล
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    const generalError = document.getElementById('error-message-' + formId);
+                                    generalError.textContent = 'เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่ภายหลัง';
+                                    generalError.style.display = 'block';
+                                });
+                            });
+                        });
+                    </script>
             @endforeach
         </tbody>
     </table>
@@ -202,8 +289,8 @@
 
 @section('scripts')
     @parent
-
     <script>
+        // ========== Filter Table ==========
         function filterTable(selectedStatus) {
             const rows = document.querySelectorAll('#userTable tbody tr');
 
@@ -233,6 +320,7 @@
             });
         });
 
+        // ========== Search ==========
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchUser');
             const rows = document.querySelectorAll('#userTable tbody tr');
@@ -241,8 +329,8 @@
                 const query = searchInput.value.toLowerCase();
 
                 rows.forEach(row => {
-                    const name = row.cells[1].textContent.toLowerCase(); // ชื่อ
-                    const email = row.cells[2].textContent.toLowerCase(); // อีเมล
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const email = row.cells[2].textContent.toLowerCase();
 
                     if (name.includes(query) || email.includes(query)) {
                         row.style.display = '';
@@ -252,6 +340,5 @@
                 });
             });
         });
-
     </script>
 @endsection

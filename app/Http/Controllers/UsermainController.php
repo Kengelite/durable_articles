@@ -37,59 +37,68 @@ class UsermainController extends Controller
 
     public function store(Request $request)
     {
-        // ตรวจสอบอีเมลหรือชื่อซ้ำ
-        $existingUser = Usermain::where('email', $request->email)
-                                ->orWhere('name', $request->name)
-                                ->first();
+        $emailExists = Usermain::where('email', $request->email)->exists();
+        $nameExists = Usermain::where('name', $request->name)->exists();
 
-        if ($existingUser) {
-            // ถ้ามีชื่อหรืออีเมลซ้ำ ส่งกลับคำเตือนที่แยกตามชนิด
-            $errorMessage = '';
-            if ($existingUser->email === $request->email) {
-                $errorMessage = 'อีเมลนี้มีผู้ใช้งานแล้ว';
+        if ($emailExists || $nameExists) {
+            $errors = [];
+
+            if ($nameExists) {
+                $errors['name'] = 'ชื่อนี้มีผู้ใช้งานแล้ว';
             }
-            if ($existingUser->name === $request->name) {
-                $errorMessage = $errorMessage ? 'ชื่อและอีเมลนี้มีผู้ใช้งานแล้ว' : 'ชื่อนี้มีผู้ใช้งานแล้ว';
+            if ($emailExists) {
+                $errors['email'] = 'อีเมลนี้มีผู้ใช้งานแล้ว';
             }
-            return response()->json(['error' => $errorMessage], 400);
+
+            return response()->json(['errors' => $errors], 400);
         }
 
-        // ตรวจสอบข้อมูลที่กรอก
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'user_type_id' => 'required|integer',
         ]);
 
-        // สร้างผู้ใช้งานใหม่
         Usermain::create($validatedData);
 
         return response()->json(['success' => 'เพิ่มข้อมูลผู้ใช้งานสำเร็จ']);
     }
 
 
-
-
-
-
-
     public function update(Request $request, $id)
     {
-        // ใช้ 'nullable' และ 'sometimes' เพื่อให้สามารถอัปเดตเฉพาะฟิลด์ที่ต้องการได้
-        $validatedData = $request->validate([
-            'user_major' => 'nullable|string|max:255',  // ไม่บังคับต้องกรอกถ้าไม่มีการเปลี่ยนแปลง
-            'user_type_id' => 'nullable|integer',      // ไม่บังคับต้องกรอกถ้าไม่มีการเปลี่ยนแปลง
-        ]);
-
         $user = Usermain::findOrFail($id);
 
-        // อัปเดตเฉพาะฟิลด์ที่ได้รับการส่งมา
+        // เช็คชื่อหรืออีเมลซ้ำกับ user คนอื่น
+        $existingUser = Usermain::where(function ($query) use ($request) {
+            $query->where('email', $request->email)
+                  ->orWhere('name', $request->name);
+        })->where('id', '!=', $id)->first();
+
+        if ($existingUser) {
+            $errorMessages = [];
+
+            if ($existingUser->email === $request->email) {
+                $errorMessages['email'] = 'อีเมลนี้มีผู้ใช้งานแล้ว';
+            }
+            if ($existingUser->name === $request->name) {
+                $errorMessages['name'] = 'ชื่อนี้มีผู้ใช้งานแล้ว';
+            }
+
+            return response()->json(['errors' => $errorMessages], 400);
+        }
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'user_major' => 'nullable|string|max:255',
+            'user_type_id' => 'nullable|integer',
+        ]);
+
         $user->update($validatedData);
 
-        return redirect()->route('manageuser.index')->with('success', 'อัปเดตข้อมูลผู้ใช้งานสำเร็จ');
+        return response()->json(['success' => 'อัปเดตสำเร็จ']);
     }
-
-
 
     public function destroy($id)
     {
