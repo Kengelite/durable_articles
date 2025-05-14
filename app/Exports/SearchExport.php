@@ -9,18 +9,16 @@ class SearchExport implements FromCollection, WithHeadings
 {
     protected $assets;
 
-    // รับข้อมูลที่กรองมาจาก Controller
     public function __construct($assets)
     {
         $this->assets = $assets;
     }
 
-    // ดึงข้อมูลที่กรองมาจาก Controller
     public function collection()
     {
         return collect($this->assets)->map(function ($asset) {
             return [
-                'หมายเลขครุภัณฑ์' => $asset->asset_number,
+                'หมายเลขครุภัณฑ์' => "\t" . $asset->asset_number, // ✅ ป้องกันการแปลงเป็นเลขวิทยาศาสตร์
                 'ชื่อครุภัณฑ์' => $asset->asset_name,
                 'สถานะ' => $this->getAssetStatus($asset->asset_asset_status_id),
                 'ราคาครุภัณฑ์' => $asset->asset_price,
@@ -38,7 +36,7 @@ class SearchExport implements FromCollection, WithHeadings
                 'วันที่สร้างครุภัณฑ์' => $asset->asset_created_at,
                 'แผนงานที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_plan,
                 'โครงการที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_project,
-                'หมายเลขซีเรียลของครุภัณฑ์' => $asset->asset_sn_number,
+                'หมายเลขซีเรียลของครุภัณฑ์' => "\t" . $asset->asset_sn_number,
                 'กิจกรรมที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_activity,
                 'มูลค่ารวมของครุภัณฑ์ที่เสื่อมราคา' => $asset->asset_deteriorated_total,
                 'ราคาของครุภัณฑ์ที่มีมูลค่าลดลง' => $asset->asset_scrap_price,
@@ -55,7 +53,7 @@ class SearchExport implements FromCollection, WithHeadings
                 'บัญชีรวมของการเสื่อมราคาครุภัณฑ์' => $asset->asset_deteriorated_total_account,
                 'สถานะการใช้งานของครุภัณฑ์' => $asset->asset_live,
                 'วันที่สิ้นสุดการเสื่อมราคาของครุภัณฑ์' => $asset->asset_deteriorated_end,
-                'รหัสครุภัณฑ์' => $asset->asset_code,
+                'รหัสครุภัณฑ์' => "\t" . $asset->asset_code,
                 'จำนวนครุภัณฑ์' => $asset->asset_amount,
                 'วันที่เริ่มรับประกัน' => $asset->asset_warranty_start,
                 'วันที่สิ้นสุดการรับประกัน' => $asset->asset_warranty_end,
@@ -74,26 +72,18 @@ class SearchExport implements FromCollection, WithHeadings
         });
     }
 
-    // ฟังก์ชันแปลงค่าของสถานะ
     private function getAssetStatus($statusId)
     {
-        switch ($statusId) {
-            case 1:
-                return 'พร้อมใช้งาน';
-            case 2:
-                return 'กำลังถูกยืม';
-            case 3:
-                return 'ชำรุด';
-            case 4:
-                return 'กำลังซ่อม';
-            case 5:
-                return 'จำหน่าย';
-            default:
-                return 'ไม่ทราบสถานะ';
-        }
+        return match ($statusId) {
+            1 => 'พร้อมใช้งาน',
+            2 => 'กำลังถูกยืม',
+            3 => 'ชำรุด',
+            4 => 'กำลังซ่อม',
+            5 => 'จำหน่าย',
+            default => 'ไม่ทราบสถานะ',
+        };
     }
 
-    // กำหนดหัวข้อของข้อมูลใน Excel
     public function headings(): array
     {
         return [

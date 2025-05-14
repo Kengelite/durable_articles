@@ -504,9 +504,9 @@ class RepairController extends Controller
 
         $query = DB::table('request_detail')
             ->join('request_repair', 'request_detail.request_repair_id', '=', 'request_repair.request_repair_id')
-            ->join('repair_status', 'request_repair.repair_status_id', '=', 'repair_status.repair_status_id')
-            ->join('user as requester', 'request_repair.user_user_id', '=', 'requester.id')
-            ->join('user_type as requester_type', 'requester.user_type_id', '=', 'requester_type.user_type_id')
+            ->leftJoin('repair_status', 'request_repair.repair_status_id', '=', 'repair_status.repair_status_id')
+            ->leftJoin('user as requester', 'request_repair.user_user_id', '=', 'requester.id')
+            ->leftJoin('user_type as requester_type', 'requester.user_type_id', '=', 'requester_type.user_type_id')
             ->leftJoin('user as technician', 'request_repair.technician_id', '=', 'technician.id')
             ->select([
                 'request_repair.request_repair_at as วันที่แจ้งซ่อม',
@@ -521,6 +521,7 @@ class RepairController extends Controller
                 'technician.name as ช่างที่รับผิดชอบงาน',
                 'request_repair.update_status_at as วันที่ดำเนินการ',
             ]);
+
 
         if ($statusFilter != 'all') {
             $query->where('repair_status.repair_status_id', $statusFilter);

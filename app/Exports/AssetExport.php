@@ -5,108 +5,98 @@ namespace App\Exports;
 use App\Models\AssetMain;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
-class AssetExport implements FromCollection, WithHeadings
+class AssetExport implements FromCollection, WithHeadings, WithMapping
 {
     public function collection()
     {
-        return AssetMain::all()->map(function ($asset) {
-            return [
-                'หมายเลขครุภัณฑ์' => $asset->asset_number,
-                'ชื่อครุภัณฑ์' => $asset->asset_name,
-                'สถานะ' => $this->getAssetStatus($asset->asset_asset_status_id),
-                'ราคาครุภัณฑ์' => $asset->asset_price,
-                'งบประมาณที่ใช้จัดหาครุภัณฑ์' => $asset->asset_budget,
-                'ที่ตั้งของครุภัณฑ์' => $asset->asset_location,
-                'รหัสคณะเจ้าของครุภัณฑ์' => $asset->faculty_faculty_id,
-                'สาขาวิชาที่รับผิดชอบครุภัณฑ์' => $asset->asset_major,
-                'รหัสอาคารที่เก็บครุภัณฑ์' => $asset->room_building_id,
-                'รหัสห้องที่เก็บครุภัณฑ์' => $asset->room_room_id,
-                'หมายเหตุ' => $asset->asset_comment,
-                'ยี่ห้อของครุภัณฑ์' => $asset->asset_brand,
-                'แหล่งทุนที่ใช้จัดหาครุภัณฑ์' => $asset->asset_fund,
-                'ประเภทการรับครุภัณฑ์' => $asset->asset_reception_type,
-                'วันที่ลงทะเบียนครุภัณฑ์' => $asset->asset_regis_at,
-                'วันที่สร้างครุภัณฑ์' => $asset->asset_created_at,
-                'แผนงานที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_plan,
-                'โครงการที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_project,
-                'หมายเลขซีเรียลของครุภัณฑ์' => $asset->asset_sn_number,
-                'กิจกรรมที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_activity,
-                'มูลค่ารวมของครุภัณฑ์ที่เสื่อมราคา' => $asset->asset_deteriorated_total,
-                'ราคาของครุภัณฑ์ที่มีมูลค่าลดลง' => $asset->asset_scrap_price,
-                'บัญชีที่บันทึกการเสื่อมราคาครุภัณฑ์' => $asset->asset_deteriorated_account,
-                'มูลค่าครุภัณฑ์ที่เสื่อมราคา' => $asset->asset_deteriorated,
-                'วันที่ครุภัณฑ์เริ่มเสื่อมราคา' => $asset->asset_deteriorated_at,
-                'วันที่หยุดเสื่อมราคาของครุภัณฑ์' => $asset->asset_deteriorated_stop,
-                'วิธีการได้รับครุภัณฑ์' => $asset->asset_get,
-                'หมายเลขเอกสารที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_document_number,
-                'หน่วยนับของครุภัณฑ์' => $asset->asset_countingunit,
-                'ราคาครุภัณฑ์ที่เสื่อมราคา' => $asset->asset_deteriorated_price,
-                'ราคาครุภัณฑ์ในบัญชี' => $asset->asset_price_account,
-                'บัญชีครุภัณฑ์' => $asset->asset_account,
-                'บัญชีรวมของการเสื่อมราคาครุภัณฑ์' => $asset->asset_deteriorated_total_account,
-                'สถานะการใช้งานของครุภัณฑ์' => $asset->asset_live,
-                'วันที่สิ้นสุดการเสื่อมราคาของครุภัณฑ์' => $asset->asset_deteriorated_end,
-                'รหัสครุภัณฑ์' => $asset->asset_code,
-                'จำนวนครุภัณฑ์' => $asset->asset_amount,
-                'วันที่เริ่มรับประกัน' => $asset->asset_warranty_start,
-                'วันที่สิ้นสุดการรับประกัน' => $asset->asset_warranty_end,
-                'รหัสผู้ใช้งานที่นำเข้าครุภัณฑ์' => $asset->user_import_id,
-                'รายละเอียดของครุภัณฑ์' => $asset->asset_detail,
-                'ประเภทของครุภัณฑ์' => $asset->asset_type,
-                'วิธีการที่เกี่ยวข้องกับครุภัณฑ์' => $asset->asset_how,
-                'บริษัท' => $asset->asset_company,
-                'ที่อยู่ของบริษัทที่จัดหาครุภัณฑ์' => $asset->asset_company_address,
-                'ประเภทหลักของครุภัณฑ์' => $asset->asset_type_main,
-                'ประเภทย่อยของครุภัณฑ์' => $asset->asset_type_sub,
-                'รายได้ที่ได้จากครุภัณฑ์' => $asset->asset_revenue,
-                'รูปภาพของครุภัณฑ์' => $asset->asset_img,
-                'รหัสชั้นที่เก็บครุภัณฑ์' => $asset->room_floor_id,
-            ];
-        });
+        return AssetMain::all();
     }
 
-    // ฟังก์ชันแปลงค่าของสถานะ
-    private function getAssetStatus($statusId)
+    public function map($asset): array
     {
-        switch ($statusId) {
-            case 1:
-                return 'พร้อมใช้งาน';
-            case 2:
-                return 'กำลังถูกยืม';
-            case 3:
-                return 'ชำรุด';
-            case 4:
-                return 'กำลังซ่อม';
-            case 5:
-                return 'จำหน่าย';
-            default:
-                return 'ไม่ทราบสถานะ';
-        }
+        return [
+            "\t" . $asset->asset_number, // ✅ บังคับให้เป็น text จริง ๆ ด้วย \t
+            $asset->asset_name,
+            $this->getAssetStatus($asset->asset_asset_status_id),
+            $asset->asset_price,
+            $asset->asset_budget,
+            $asset->asset_location,
+            $asset->faculty_faculty_id,
+            $asset->asset_major,
+            $asset->room_building_id,
+            $asset->room_room_id,
+            $asset->asset_comment,
+            $asset->asset_brand,
+            $asset->asset_fund,
+            $asset->asset_reception_type,
+            $asset->asset_regis_at,
+            $asset->asset_created_at,
+            $asset->asset_plan,
+            $asset->asset_project,
+            $asset->asset_sn_number,
+            $asset->asset_activity,
+            $asset->asset_deteriorated_total,
+            $asset->asset_scrap_price,
+            $asset->asset_deteriorated_account,
+            $asset->asset_deteriorated,
+            $asset->asset_deteriorated_at,
+            $asset->asset_deteriorated_stop,
+            $asset->asset_get,
+            $asset->asset_document_number,
+            $asset->asset_countingunit,
+            $asset->asset_deteriorated_price,
+            $asset->asset_price_account,
+            $asset->asset_account,
+            $asset->asset_deteriorated_total_account,
+            $asset->asset_live,
+            $asset->asset_deteriorated_end,
+            $asset->asset_code,
+            $asset->asset_amount,
+            $asset->asset_warranty_start,
+            $asset->asset_warranty_end,
+            $asset->user_import_id,
+            $asset->asset_detail,
+            $asset->asset_type,
+            $asset->asset_how,
+            $asset->asset_company,
+            $asset->asset_company_address,
+            $asset->asset_type_main,
+            $asset->asset_type_sub,
+            $asset->asset_revenue,
+            $asset->asset_img,
+            $asset->room_floor_id,
+        ];
     }
-
 
     public function headings(): array
     {
         return [
-            'หมายเลขครุภัณฑ์', 'ชื่อครุภัณฑ์', 'สถานะ', 'ราคาครุภัณฑ์', 'งบประมาณที่ใช้จัดหาครุภัณฑ์',
-            'ที่ตั้งของครุภัณฑ์', 'รหัสคณะเจ้าของครุภัณฑ์', 'สาขาวิชาที่รับผิดชอบครุภัณฑ์',
-            'รหัสอาคารที่เก็บครุภัณฑ์', 'รหัสห้องที่เก็บครุภัณฑ์', 'หมายเหตุ', 'ยี่ห้อของครุภัณฑ์',
-            'แหล่งทุนที่ใช้จัดหาครุภัณฑ์', 'ประเภทการรับครุภัณฑ์', 'วันที่ลงทะเบียนครุภัณฑ์',
-            'วันที่สร้างครุภัณฑ์', 'แผนงานที่เกี่ยวข้องกับครุภัณฑ์', 'โครงการที่เกี่ยวข้องกับครุภัณฑ์',
-            'หมายเลขซีเรียลของครุภัณฑ์', 'กิจกรรมที่เกี่ยวข้องกับครุภัณฑ์', 'มูลค่ารวมของครุภัณฑ์ที่เสื่อมราคา',
-            'ราคาของครุภัณฑ์ที่มีมูลค่าลดลง', 'บัญชีที่บันทึกการเสื่อมราคาครุภัณฑ์', 'มูลค่าครุภัณฑ์ที่เสื่อมราคา',
-            'วันที่ครุภัณฑ์เริ่มเสื่อมราคา', 'วันที่หยุดเสื่อมราคาของครุภัณฑ์', 'วิธีการได้รับครุภัณฑ์',
-            'หมายเลขเอกสารที่เกี่ยวข้องกับครุภัณฑ์', 'หน่วยนับของครุภัณฑ์', 'ราคาครุภัณฑ์ที่เสื่อมราคา',
-            'ราคาครุภัณฑ์ในบัญชี', 'บัญชีครุภัณฑ์', 'บัญชีรวมของการเสื่อมราคาครุภัณฑ์',
-            'สถานะการใช้งานของครุภัณฑ์', 'วันที่สิ้นสุดการเสื่อมราคาของครุภัณฑ์', 'รหัสครุภัณฑ์',
-            'จำนวนครุภัณฑ์', 'วันที่เริ่มรับประกัน', 'วันที่สิ้นสุดการรับประกัน',
-            'รหัสผู้ใช้งานที่นำเข้าครุภัณฑ์', 'รายละเอียดของครุภัณฑ์', 'ประเภทของครุภัณฑ์',
-            'วิธีการที่เกี่ยวข้องกับครุภัณฑ์', 'บริษัท', 'ที่อยู่ของบริษัทที่จัดหาครุภัณฑ์',
-            'ประเภทหลักของครุภัณฑ์', 'ประเภทย่อยของครุภัณฑ์', 'รายได้ที่ได้จากครุภัณฑ์',
-            'รูปภาพของครุภัณฑ์', 'รหัสชั้นที่เก็บครุภัณฑ์',
+            'หมายเลขครุภัณฑ์', 'ชื่อครุภัณฑ์', 'สถานะ', 'ราคาครุภัณฑ์', 'งบประมาณที่ใช้จัดหา',
+            'ที่ตั้ง', 'รหัสคณะ', 'สาขาวิชา', 'รหัสอาคาร', 'รหัสห้อง',
+            'หมายเหตุ', 'ยี่ห้อ', 'แหล่งทุน', 'ประเภทการรับ', 'วันที่ลงทะเบียน',
+            'วันที่สร้าง', 'แผนงาน', 'โครงการ', 'หมายเลขซีเรียล', 'กิจกรรม',
+            'มูลค่ารวมเสื่อมราคา', 'ราคาลดลง', 'บัญชีเสื่อมราคา', 'มูลค่าที่เสื่อม',
+            'วันที่เริ่มเสื่อม', 'วันที่หยุดเสื่อม', 'วิธีการได้มา', 'เลขเอกสาร', 'หน่วยนับ',
+            'ราคาครุภัณฑ์ที่เสื่อมราคา', 'ราคาครุภัณฑ์ในบัญชี', 'บัญชีครุภัณฑ์',
+            'บัญชีรวมของเสื่อมราคา', 'สถานะใช้งาน', 'วันที่สิ้นสุดเสื่อม',
+            'รหัสครุภัณฑ์', 'จำนวน', 'เริ่มรับประกัน', 'สิ้นสุดรับประกัน',
+            'รหัสผู้ใช้ที่นำเข้า', 'รายละเอียด', 'ประเภท', 'วิธีที่เกี่ยวข้อง',
+            'บริษัท', 'ที่อยู่บริษัท', 'ประเภทหลัก', 'ประเภทย่อย', 'รายได้',
+            'รูปภาพ', 'รหัสชั้น',
         ];
     }
 
+    private function getAssetStatus($statusId)
+    {
+        return match ($statusId) {
+            1 => 'พร้อมใช้งาน',
+            2 => 'กำลังถูกยืม',
+            3 => 'ชำรุด',
+            4 => 'กำลังซ่อม',
+            5 => 'จำหน่าย',
+            default => 'ไม่ทราบสถานะ',
+        };
+    }
 }
-
