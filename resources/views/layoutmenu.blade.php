@@ -258,9 +258,21 @@
                 @endauth
             </ul>
             <!-- Mobile Menu Toggle Button -->
-            <button class="button-menu-mobile open-left">
-                <i class="mdi mdi-menu"></i>
-            </button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- ปุ่มเมนู -->
+                <button class="button-menu-mobile open-left">
+                    <i class="mdi mdi-menu"></i>
+                </button>
+
+                <!-- ปุ่มดาวน์โหลดคู่มือ -->
+                <a href="{{ asset('Manual-คู่มือการใช้งาน.pdf') }}"
+                download
+                title="ดาวน์โหลดคู่มือ"
+                class="download-manual-button"
+                style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; text-decoration: none; background: transparent; border: 1px solid #ccc; border-radius: 6px; cursor: pointer;">
+                    <i class="mdi mdi-file-document-outline" style="font-size: 18px;"></i>
+                </a>
+            </div>
         </div>
         <!-- End Topbar -->
         <!-- Start Content-->

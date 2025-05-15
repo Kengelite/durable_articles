@@ -219,69 +219,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <script>
-                        document.querySelectorAll('[id^="editUserForm-"]').forEach(form => {
-                            form.addEventListener('submit', function(e) {
-                                e.preventDefault(); // กัน submit ปกติ
-
-                                const formId = form.id.split('-')[1]; // เอา id ของ user มาใช้
-                                const name = document.getElementById('name-' + formId).value;
-                                const email = document.getElementById('email-' + formId).value;
-                                const userTypeId = document.getElementById('user_type_id-' + formId).value;
-
-                                // เคลียร์ error ก่อน
-                                document.querySelectorAll('.text-danger').forEach(error => error.style.display = 'none');
-
-                                // เริ่มต้น request
-                                fetch("{{ url('manageuser') }}/" + formId + "/update", {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                    },
-                                    body: JSON.stringify({
-                                        name: name,
-                                        email: email,
-                                        user_type_id: userTypeId,
-                                    })
-                                })
-                                .then(response => response.json().then(data => ({ status: response.status, body: data })))
-                                .then(({ status, body }) => {
-                                    if (status === 400 && body.errors) {
-                                        // แสดงข้อความผิดพลาดที่เกิดขึ้นจาก backend
-                                        if (body.errors.general) {
-                                            const generalError = document.getElementById('error-message-' + formId);
-                                            generalError.textContent = body.errors.general;
-                                            generalError.style.display = 'block';
-                                        }
-
-                                        if (body.errors.name) {
-                                            const nameError = document.getElementById('name-error-' + formId);
-                                            nameError.textContent = body.errors.name;
-                                            nameError.style.display = 'block';
-                                        }
-
-                                        if (body.errors.email) {
-                                            const emailError = document.getElementById('email-error-' + formId);
-                                            emailError.textContent = body.errors.email;
-                                            emailError.style.display = 'block';
-                                        }
-                                    } else if (body.success) {
-                                        alert(body.success);
-                                        $('#editModal-' + formId).modal('hide');  // ปิด Modal เมื่อบันทึกสำเร็จ
-                                        location.reload(); // รีโหลดหน้าเพื่อรีเฟรชข้อมูล
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error:', error);
-                                    const generalError = document.getElementById('error-message-' + formId);
-                                    generalError.textContent = 'เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่ภายหลัง';
-                                    generalError.style.display = 'block';
-                                });
-                            });
-                        });
-                    </script>
             @endforeach
         </tbody>
     </table>
@@ -340,5 +277,55 @@
                 });
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[id^="editUserForm-"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formId = this.id.split('-')[1];
+                const name = document.getElementById(`name-${formId}`).value;
+                const email = document.getElementById(`email-${formId}`).value;
+                const userTypeId = document.getElementById(`user_type_id-${formId}`).value;
+
+                // Clear errors
+                document.querySelectorAll(`#editModal-${formId} .text-danger`).forEach(el => el.style.display = 'none');
+
+                fetch(`/manageuser/${formId}/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ name, email, user_type_id: userTypeId })
+                })
+                .then(res => res.json().then(data => ({ status: res.status, body: data })))
+                .then(({ status, body }) => {
+                    if (status === 400 && body.errors) {
+                        if (body.errors.name) {
+                            const nameError = document.getElementById(`name-error-${formId}`);
+                            nameError.textContent = body.errors.name;
+                            nameError.style.display = 'block';
+                        }
+                        if (body.errors.email) {
+                            const emailError = document.getElementById(`email-error-${formId}`);
+                            emailError.textContent = body.errors.email;
+                            emailError.style.display = 'block';
+                        }
+                    } else if (body.success) {
+                        alert(body.success);
+                        $(`#editModal-${formId}`).modal('hide');
+                        location.reload();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    const errorMsg = document.getElementById(`error-message-${formId}`);
+                    errorMsg.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+                    errorMsg.style.display = 'block';
+                });
+            });
+        });
+    });
+
     </script>
 @endsection

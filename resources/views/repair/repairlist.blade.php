@@ -41,7 +41,7 @@
 
     <form method="GET" action="{{ route('repairlist') }}" class="d-flex flex-wrap align-items-center gap-3">
         <!-- ฟอร์มการกรองช่าง (แสดงเฉพาะเมื่อ user_type_id = 2) -->
-        @if(auth()->check() && auth()->user()->user_type_id == 2)
+        @if(auth()->check() && in_array(auth()->user()->user_type_id, [2, 6]))
         <div class="form-check mb-2 mb-md-0">
             <input class="form-check-input form-check-lg" type="checkbox" name="technician" id="technicianFilter" value="1" {{ $technicianFilter ? 'checked' : '' }} onchange="this.form.submit()">
             <label class="form-check-label" for="technicianFilter">

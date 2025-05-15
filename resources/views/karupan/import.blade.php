@@ -20,17 +20,26 @@
     @endif
 
     <div class="container">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center my-4">
-            <h4 class="mb-3 mb-md-0">นำเข้าข้อมูล Excel</h4>
-            <div class="btn-group" role="group">
-                <form id="upload_form" method="POST" action="{{ route('save.data') }}" enctype="multipart/form-data">
-                    @csrf
-                    <input type="file" id="my_file_input" name="excel_file" style="display: none;">
-                    <button type="button" onclick="document.querySelector('#my_file_input').click()" class="btn btn-primary">อัพโหลด Excel</button>
-                    <button type="submit" id="save_to_db" class="btn btn-success">บันทึกลงฐานข้อมูล</button>
-                </form>
-            </div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center my-4">
+        <!-- หัวข้อ + ปุ่มตัวอย่าง -->
+        <div class="d-flex align-items-center gap-2 mb-3 mb-md-0">
+            <h4 class="mb-0">นำเข้าข้อมูล Excel</h4>
+            <a href="{{ asset('template.xlsx') }}" download class="btn btn-outline-secondary btn-sm">
+                ดาวน์โหลดตัวอย่าง
+            </a>
         </div>
+
+        <!-- กลุ่มปุ่มอัพโหลด -->
+        <div class="btn-group" role="group">
+            <form id="upload_form" method="POST" action="{{ route('save.data') }}" enctype="multipart/form-data" style="display: inline-flex;">
+                @csrf
+                <input type="file" id="my_file_input" name="excel_file" style="display: none;">
+                <button type="button" onclick="document.querySelector('#my_file_input').click()" class="btn btn-primary">อัพโหลด Excel</button>
+                <button type="submit" id="save_to_db" class="btn btn-success">บันทึกลงฐานข้อมูล</button>
+            </form>
+        </div>
+    </div>
+
         <hr>
 
         <div class="card">
