@@ -186,6 +186,8 @@ class RepairController extends Controller
             'technician_id' => 'nullable|exists:user,id', // ใช้ 'user' แทน 'users'
             'asset_images' => 'nullable|array', // Validate the image array
             'asset_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation
+            'asset_number' => 'required|string|max:255',
+
         ]);
 
         // ค้นหาข้อมูล request_repair_id ที่เกี่ยวข้อง
@@ -208,7 +210,9 @@ class RepairController extends Controller
                 ->update([
                     'request_repair_note' => $request->request_repair_note,
                     'repair_costs' => $request->repair_costs,
+                    'asset_number' => $request->asset_number, // <- เพิ่มตรงนี้
                 ]);
+
 
             // Handle the image upload if any images are selected
             if ($request->hasFile('asset_images')) {

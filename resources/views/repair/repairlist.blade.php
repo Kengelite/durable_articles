@@ -218,10 +218,62 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-6 position-relative">
                                     <label for="assetNumber{{ $repair->request_detail_id }}" class="form-label">หมายเลขครุภัณฑ์</label>
-                                    <input type="text" class="form-control" id="assetNumber{{ $repair->request_detail_id }}" value="{{ $repair->asset_number }}" readonly>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="asset_number{{ $repair->request_detail_id }}"
+                                        name="asset_number"
+                                        autocomplete="off"
+                                        value="{{ old('asset_number', $repair->asset_number) }}">
+                                    <div id="assetList{{ $repair->request_detail_id }}" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
                                 </div>
+
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const assetNumberInput = document.getElementById('asset_number{{ $repair->request_detail_id }}');
+                                        const assetListDiv = document.getElementById('assetList{{ $repair->request_detail_id }}');
+
+                                        assetNumberInput.addEventListener('input', function () {
+                                            const searchTerm = this.value.toLowerCase().trim();
+
+                                            if (!searchTerm) {
+                                                assetListDiv.innerHTML = '';
+                                                return;
+                                            }
+
+                                            fetch(`/search-assets?keyword=${encodeURIComponent(searchTerm)}`)
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    assetListDiv.innerHTML = '';
+
+                                                    data.forEach(asset => {
+                                                        const option = document.createElement('button');
+                                                        option.textContent = `${asset.asset_name} [${asset.asset_number}]`;
+                                                        option.classList.add('list-group-item', 'list-group-item-action');
+                                                        option.type = 'button';
+
+                                                        option.addEventListener('click', function () {
+                                                            assetNumberInput.value = asset.asset_number;
+                                                            assetListDiv.innerHTML = '';
+                                                        });
+
+                                                        assetListDiv.appendChild(option);
+                                                    });
+                                                })
+                                                .catch(error => console.error('Error fetching assets:', error));
+                                        });
+
+                                        // คลิกข้างนอกแล้วซ่อนรายการ
+                                        document.addEventListener('click', function (event) {
+                                            if (!event.target.closest(`#assetList{{ $repair->request_detail_id }}`) &&
+                                                event.target !== assetNumberInput) {
+                                                assetListDiv.innerHTML = '';
+                                            }
+                                        });
+                                    });
+                                </script>
+
                                 <div class="col-md-6">
                                     <label for="technicianName{{ $repair->request_detail_id }}" class="form-label">ช่างที่รับผิดชอบงาน</label>
                                     <select name="technician_id" class="form-control">
