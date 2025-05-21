@@ -81,7 +81,7 @@
             <p><span>ช่างที่รับผิดชอบงาน:</span> {{ $repairDetails->technician_name ?? 'ไม่มีข้อมูล' }}</p>
         </div>
         <div class="footer">
-            <p>หากคุณมีข้อสงสัยเพิ่มเติม กรุณาติดต่อเราที่ <a href="mailto:info@company.com">computing.kku@kku.ac.th</a></p>
+            <p>หากคุณมีข้อสงสัยเพิ่มเติม กรุณาติดต่อเราที่ <a href="mailto:info@company.com">repaircpkku@gmail.com</a></p>
         </div>
     </div>
 </body>
