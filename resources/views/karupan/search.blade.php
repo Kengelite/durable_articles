@@ -10,6 +10,9 @@
 <div class="container-fluid">
     <!-- ฟอร์มสำหรับค้นหา -->
     <form id="searchForm" action="{{ route('search') }}" method="GET" class="mb-3">
+        <div class="alert alert-warning">
+            ผลการค้นหาเกิน 500 รายการ กรุณาระบุคำค้นให้เฉพาะเจาะจงมากขึ้น
+        </div>
         <div class="input-group">
             <input type="text" class="form-control" placeholder="ค้นหาข้อมูลครุภัณฑ์" name="searchasset" value="{{ request('searchasset') }}">
             <button class="btn btn-primary" type="submit">ค้นหา</button>

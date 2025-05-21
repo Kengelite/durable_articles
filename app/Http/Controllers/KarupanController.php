@@ -376,7 +376,9 @@ class KarupanController extends Controller
             $query->where('asset_reception_type', 'LIKE', "%$asset_reception_type%");
         }
 
-        $asset_main = $query->get();
+        $asset_main = $query->paginate(500);
+
+
 
         // ส่งข้อมูลไปยังหน้า view
         return view('karupan/search', compact('asset_main'));
