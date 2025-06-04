@@ -87,7 +87,7 @@
 
         <div class="d-flex justify-content-end mt-3">
             @if(Auth::check()) <!-- ตรวจสอบว่าผู้ใช้ล็อกอิน -->
-                <button type="submit" class="btn btn-lg btn-success shadow">✅ ยืนยันการยืม</button>
+                <button type="submit" class="btn btn-lg btn-success shadow"> ยืนยันการยืม</button>
             @else
                 <!-- ถ้าผู้ใช้ไม่ได้ล็อกอิน -->
                 <span class="text-danger">กรุณาล็อกอินก่อนถึงจะยืมได้</span>
